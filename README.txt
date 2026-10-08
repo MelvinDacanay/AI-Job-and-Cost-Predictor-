@@ -4,19 +4,12 @@
 
 ## Project Summary
 
-### Situation
-
 While running a residential pressure-washing business, I found that estimating job duration, pricing, and profitability largely depended on intuition. This made scheduling difficult and made it harder to determine whether potential jobs were worth accepting.
-
-### Task
 
 I wanted to turn my historical job data into a decision-support tool that could estimate **how long a job would take, what I could reasonably quote, what it would cost, and how profitable it could be**.
 
-### Action
 
 I collected and analyzed historical operating data and built regression models in Python using **NumPy, Pandas, SciPy, and Scikit-learn**. I evaluated the models using **10-fold cross-validation and R²**, implemented statistical confidence intervals, and built custom Python classes to organize the prediction and financial calculations.
-
-### Result
 
 The final job-duration model achieved an **R² of 0.880**, meaning it explained approximately **88% of the variance** in the observed job-duration data during evaluation.
 
