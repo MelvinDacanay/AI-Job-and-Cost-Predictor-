@@ -1,134 +1,391 @@
-AI powered pressure washing job predictor
+# AI-Powered Pressure Washing Job Predictor
 
-1. Purpose
+An applied data science project that uses historical pressure-washing job data to estimate **job duration, quote ranges, operating expenses, and potential net profit**.
 
-     Just from the size of a persons driveway, this predictor can predict with 95% accuracy
-     how long the job will take, how much a person should quote, how much the expenses will be,
-     and how much they will make from the job.
+The project was built around a real business problem: using historical operational data to make better decisions about **scheduling, pricing, expenses, and job profitability** rather than relying entirely on intuition.
 
-2. Implementations
+---
 
-     The duration feature is useful on both the customer end and the business end
-          - It enables both the customer and the business to better schedule a slot that works for both parties
-          - It also helps automate the process of fitting several jobs into one day which i often struggle with 
-          when i try to go off intuition and judgement alone.
-          - It sets expectations and the model is tailored around how long it took me to complete my job in the past and
-          takes conservative measures (95% CI t-test) into account.
+# 1. Purpose
 
-     Job quotes:
-          This gives a person a general idea of how much they shoould quote
-          the customer. It's based on previous agreed on quotes. One's average value will shift the interval over time
-          once they start scaling their business. This helps tell a person if
-          its worth taking a job.
+The predictor uses the estimated number of cars that can fit on a driveway as a primary input to estimate:
 
-     Expense predictors:
-          This predicts how much a person will spend on the supplies
-          that get used during a job.
+* Job duration
+* Quote range
+* Operating expenses
+* Potential net profit
 
-     Net Profit:
-          simply how much a person makes minus how much they spend.
-          Another measure that someone can use to tell them if its worth
-          taking a job.
+The model is based on historical data collected from my own pressure-washing operations.
 
-3. How it works
-     Since all the values have a reletively strong positive relationship
-     I decided to go with linear regression and multiple regression.
-     Both already had good scores to begin with so I get to modeling.
+Rather than producing only a single estimate, the program uses statistical intervals to represent uncertainty around the predictions.
 
-     My goal was to essentially get input an amount of cars and recieve
-     a 95% confidence interval of how long a job would take
+> **Note:** A 95% confidence interval should not be interpreted as "95% prediction accuracy." The interval represents statistical uncertainty under the assumptions of the underlying model.
 
-     This is how I did it in simple terms:
+---
 
-          - Using the same model I got the distance of y from the mean
-          and the distance from the line
-          - I already had the coefficient, and the intercept which I used
-          to calculate the hours (y) it took at a number of cars (x)
-          - I calculated the confidence interval using the mean squared error
-          of the slope, variance of x, mean of x, and the number of observations
-          - I ran a 95% CI t test and came out with the interval
+# 2. Applications
 
-          - for multiple regression it was a similar process. 
-          I used the same test
-          - for standard error I used linear algebra and matrices to
-          generate the shape of the interval of our expense
+## Job Duration
 
-          - For the revenue estimates I multiplied the duration by the average gross
-          wage of operations
+Estimating job duration can help both the business and the customer.
 
-          - I then computer the profit by subtracting the expense from 
-          revenue
-     
-4. Tools used:
-     I used numpy, pandas, scikit learn, scipy, and created my own classes as well
+For the business, it can:
 
-5. Sample output:
+* Improve scheduling
+* Estimate how many jobs can fit into a workday
+* Reduce reliance on intuition when estimating completion times
+* Identify jobs that may take significantly longer than expected
 
+For the customer, it can:
+
+* Provide a more realistic expected completion time
+* Help with scheduling a service window
+* Set better expectations before the job begins
+
+The model is based on my historical completion times, allowing the estimates to reflect the actual operating characteristics of my business.
+
+---
+
+## Job Quotes
+
+The model provides a general quote range based on historical accepted quotes.
+
+As more jobs are collected, the underlying statistics can be updated to reflect changes in pricing and the business's average job value.
+
+This can help answer:
+
+> **Is this job worth taking?**
+
+rather than simply:
+
+> **What should I charge?**
+
+---
+
+## Expense Prediction
+
+The expense model estimates variable costs associated with completing a job, including:
+
+* Bleach/chemical costs
+* Fuel
+* Other consumable supplies
+
+These estimates are then incorporated into the profitability calculation.
+
+---
+
+## Net Profit
+
+Potential net profit is derived from estimated revenue and estimated operating expenses.
+
+**Net Profit = Estimated Revenue − Estimated Expenses**
+
+This provides another metric for determining whether a potential job is economically worthwhile.
+
+---
+
+# 3. How It Works
+
+## Regression Modeling
+
+I first analyzed the relationships between driveway size and the target variables.
+
+Because the variables showed relatively strong positive relationships, I experimented with:
+
+* Simple linear regression
+* Multiple linear regression
+
+The models were implemented using Python and evaluated using statistical and machine-learning techniques.
+
+---
+
+## Job Duration
+
+The primary goal was to estimate how long a job would take based on driveway size.
+
+The simple regression model follows the general form:
+
+**y = β₀ + β₁x**
+
+Where:
+
+* `x` = estimated driveway capacity
+* `y` = estimated job duration
+* `β₀` = intercept
+* `β₁` = regression coefficient
+
+The regression coefficients were used to calculate the expected duration for a given driveway size.
+
+I then calculated an interval around the estimate to represent uncertainty in the prediction.
+
+---
+
+## Confidence Interval
+
+For the regression analysis, I used statistical quantities including:
+
+* Mean squared error
+* Variance of the predictor
+* Mean predictor value
+* Number of observations
+* Regression coefficients
+* Student's t-distribution
+
+These calculations were used to generate a **95% confidence interval** around the regression estimate.
+
+For the multiple-regression model, I also used linear algebra and matrix calculations to calculate the standard error associated with the regression estimates.
+
+---
+
+## Revenue Estimation
+
+Revenue is derived from the predicted job duration and the historical gross hourly rate of the business.
+
+This creates a relationship between the statistical model and the business model:
+
+**Predicted Duration → Estimated Revenue**
+
+The revenue calculation therefore combines a model prediction with a business assumption rather than attempting to independently predict revenue.
+
+---
+
+## Profit Estimation
+
+The estimated profit is calculated as:
+
+**Estimated Profit = Estimated Revenue − Estimated Expenses**
+
+The resulting range provides different possible financial outcomes based on the model's estimated duration, quote, and expenses.
+
+---
+
+# 4. Model Performance
+
+The regression models were evaluated using **10-fold cross-validation** and the **R² (coefficient of determination)** score.
+
+## Job Duration Model
+
+The model improved during development:
+
+| Model                       |        R² |
+| --------------------------- | --------: |
+| Initial regression pipeline |     0.757 |
+| Revised regression pipeline | **0.880** |
+
+The final R² of **0.880** means that the model explains approximately **88% of the variance** in the observed job-duration data used during evaluation.
+
+The improvement came after reviewing the underlying Excel data for inconsistencies and refining the modeling pipeline.
+
+---
+
+## Expense Model
+
+The expense model uses multiple-output regression to estimate job-related costs.
+
+The model was also evaluated using **10-fold cross-validation** and R².
+
+The resulting predictions were generally within approximately a few dollars of the observed expense values during testing.
+
+Because expenses represent one of the inputs to the final profitability calculation, improving the expense model can directly improve the quality of the financial estimates.
+
+---
+
+## Model Interpretation
+
+The R² scores indicate that the models capture a substantial portion of the relationships present in the historical dataset.
+
+However, the results should not be interpreted as a guarantee that the model will perform identically on future jobs.
+
+The dataset is primarily based on my own historical pressure-washing operations, so performance may change as:
+
+* More jobs are collected
+* Different property types are added
+* Pricing changes
+* Operating procedures change
+* Additional predictors are introduced
+
+---
+
+# 5. Sample Output
+
+### Input
+
+```text
 How many cars can fit on the driveway: 20
-The job will take between 2.00 hour(s) and 51.00 minute(s) and 3.00 hour(s) and 8.00 minute(s)
+```
 
-Low bid: 333.47 USD
-High bid: 408.21 USD
+### Predicted Job Duration
 
-You will spend between 11 dollar(s) and 18 dollars on bleach_cost
-You will spend between 6 dollar(s) and 6 dollars on gas_cost
+```text
+Lower estimate: 2 hours 51 minutes
+Upper estimate: 3 hours 8 minutes
+```
 
-Worst case net profit: 309.47
-Best case net profit: 391.21
+### Estimated Quote Range
 
-6. How to use it:
+```text
+Low bid:  $333.47
+High bid: $408.21
+```
 
-     Simply find a driveway in your neighborhood, estimate how many cars are
-     able to fit on it by eye (many are 4-6 on average in a residential).
-     My program will then do all the calculations for you!
+### Estimated Expenses
 
-7. Future updates and notes
+```text
+Bleach: $11–$18
+Gas:    ~$6
+```
 
-Notes:
-     The cost of a job to me depends on how much money I spend and how much time I spend on it. My goal is to maximize the profit margin.
-     I mainly want to maximize the profit margin so that I am able to spend more on lead generation as that is the biggest expense Since
-     I dont have any employees. Essentially lead generation is what my business is built upon. There is opportunity cost in my
-     situation meaning it is much better if I did door to door (current method) over ads. Door to door is terrible for scaling but im not scaling
-     at the moment.
+### Estimated Net Profit
 
-     TLDR: maximize profit margin first (minimize expenses) and maximize leads (MOST IMPORTANT d2d sales shift to digital marketing), 
-     once lead generation is solved (constantly booked 2 weeks out) we can then maximize speed (job duration), 
-     once the two are resolved we cannot add more hours into our day meaning we must horizontally expand (more rigs in our fleet).
+```text
+Worst-case: $309.47
+Best-case:  $391.21
+```
 
-     I will be making a job cost predictor (profit margin, revenue, COGS, advertising expenses):
-     - calculates our revenue/wage by calculating the duration
-          - uses duration to calculate wage (low vs high bid)
-     - desired net profit is calculated
-          - revenue - COGS / hours 
+These values are model-derived estimates and are not guaranteed outcomes.
 
-future updates:
+---
 
-Oppurtunity cost calculator:
-     - using profit we calculate money that we are willing to spend on ads 
-          - uses opportunity cost
-               - at what point is it more worth it to do online marketing over d2d
-               - at what point can I reject low bidders
-                    - what makes a job worth it vs not worth it depending on my stage
-                         - stage being assessed by revenue and profit margin
-                         - make graph on when the d2d and marketing graphs intersect (revenue target vs expenses)
-               - once my hourly profit passes a certain value, I am wasting time 
-               going d2d when I could be quickly getting leads via marketing 
-                    - my time is essentially worth more at scale
-          - essentially a stop loss (CPA threshold)
-          - based on previous metrics reguarding how much we spent per lead in the past season
+# 6. How to Use
 
+1. Find a potential residential pressure-washing job.
+2. Estimate how many cars could fit on the driveway.
+3. Enter the estimated driveway capacity into the program.
+4. The program calculates:
 
-Model preformance over time and logging:
+   * Estimated job duration
+   * Quote range
+   * Estimated operating expenses
+   * Estimated net profit
 
-1. linear regression + pipeline: .757 (super inconsistent confidence interval)
-2. linear regression + pipeline: 
-     -.880 (Checked excel data for inconsistencies)
-     - x explains 88% of the variance in Y
-3. Since im doing linear regression I will do this in SAS
-4. manual reg calc not scaling because calculations automatically account 
-for variation and less leakage when computing back to initial scales
+For example, many residential driveways may accommodate approximately 4–6 vehicles, although actual driveway size varies significantly between properties.
 
-Model test expense
-1. out first multi output regres sor test had us only having values that were ~1$ (square root of 2.7) off the line after rooting the mean squared error, using cross
-validation we are only a dollar or so off
-     - In the grand scheme, its negligible if my profit margins are greater than 10%
+---
+
+# 7. Technologies
+
+* **Python**
+* **NumPy**
+* **Pandas**
+* **SciPy**
+* **Scikit-learn**
+* **Linear Regression**
+* **Multiple Linear Regression**
+* **10-fold Cross-Validation**
+* **Statistical Inference**
+* **Matrix-based calculations**
+* **Custom Python Classes**
+
+---
+
+# 8. Future Work
+
+## Expanded Job Cost Model
+
+The next version will expand the financial model to incorporate:
+
+* Revenue
+* Cost of goods sold (COGS)
+* Labor/time cost
+* Advertising expenses
+* Profit margin
+* Customer acquisition cost (CAC)
+
+The goal is to evaluate the complete economics of accepting a job rather than evaluating a job based solely on revenue.
+
+---
+
+## Opportunity Cost Calculator
+
+A future version will compare different customer-acquisition strategies, particularly:
+
+**Door-to-door sales**
+
+vs.
+
+**Digital advertising**
+
+The goal is to determine the point at which the value of the owner's time becomes high enough that spending money on customer acquisition becomes more profitable than manually generating leads.
+
+Potential inputs include:
+
+* Revenue
+* Profit margin
+* Hourly profit
+* Cost per lead
+* Lead-to-customer conversion rate
+* Advertising spend
+* Available working hours
+
+This could eventually produce a dynamic **customer acquisition cost threshold** based on the current economics of the business.
+
+---
+
+## Business Scaling Model
+
+The long-term objective is to model the business in stages.
+
+### Stage 1 — Generate Leads
+
+Focus on consistently acquiring enough customers to maintain a healthy schedule.
+
+↓
+
+### Stage 2 — Improve Job Economics
+
+Optimize:
+
+* Pricing
+* Expenses
+* Profit margins
+* Customer acquisition costs
+
+↓
+
+### Stage 3 — Improve Operational Efficiency
+
+Reduce unnecessary job duration and increase the number of jobs that can be completed in a day.
+
+↓
+
+### Stage 4 — Scale Capacity
+
+Once available working hours become the primary constraint, increase capacity through additional equipment, employees, or additional rigs.
+
+---
+
+# 9. Limitations
+
+The model currently has several limitations:
+
+* The dataset is based primarily on my own historical jobs.
+* Driveway capacity is estimated rather than measured precisely.
+* Job duration depends on factors beyond driveway size.
+* Surface condition can significantly affect cleaning time.
+* Equipment setup and operating conditions can affect duration.
+* Historical pricing may not represent optimal market pricing.
+* Expense estimates depend on historical consumption patterns.
+* Statistical intervals depend on the assumptions of the regression model.
+* A larger and more diverse dataset would improve confidence in the model's generalizability.
+
+These limitations are important because a strong relationship in historical data does not necessarily guarantee the same performance on every future property.
+
+---
+
+# 10. Project Objective
+
+The ultimate goal of this project is to turn historical operational data into a **decision-support system for a service business**.
+
+Instead of relying exclusively on intuition, the system attempts to answer:
+
+> **How long will this job take?**
+
+> **What should I charge?**
+
+> **What will it cost me?**
+
+> **How profitable is it?**
+
+> **Is accepting this job worth the opportunity cost?**
+
+The project combines **statistical modeling, machine learning, and real-world business analysis** to explore how operational data can be used to improve pricing, scheduling, and profitability.
